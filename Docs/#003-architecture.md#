@@ -519,3 +519,6 @@ Commit automatique
 Aucun coffre ne peut être laissé dans un état incohérent.
 
 Le WAL constitue une exigence obligatoire de la V1.
+
+
+
