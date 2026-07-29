@@ -1,0 +1,8 @@
+[package]
+name = "daemon"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Daemon microkernel : services, capacites, orchestration (cf. docs/005-daemon.md)"
+
+[dependencies]

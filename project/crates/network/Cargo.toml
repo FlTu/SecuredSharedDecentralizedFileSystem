@@ -1,0 +1,8 @@
+[package]
+name = "network"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Network Engine : libp2p, sessions, pair hote, sessions de manifest (cf. docs/010-network.md)"
+
+[dependencies]

@@ -14,24 +14,24 @@ Ce document définit l'ordre de développement recommandé, cohérent avec les p
 
 # 2. Phases
 
-## Phase 1 — Fondations locales (Crypto, Storage, Vault)
+## Phase 1 — Squelette workspace et validation cross-compilation
+
+- Structure de workspace complète (`004-workspace.md` §6) : toutes les crates présentes dès le départ, même en stub (`common`, `crypto`, `storage`, `manifest`, `vault`, `sync`, `network`, `identity`, `daemon`, `ipc`, `ffi`, `cli`).
+- Validation de compilation native Linux, puis croisée Windows (`cross`/mingw-w64) et Android (`cargo-ndk`) **avant tout développement métier substantiel** — un problème de toolchain découvert tard coûte beaucoup plus cher qu'un problème découvert sur un squelette vide.
+- Aucune logique métier à ce stade, uniquement de quoi prouver que chaque crate compile et s'exécute sur les trois cibles.
+
+## Phase 2 — Fondations locales (Crypto, Storage, Vault)
 
 - Crate `crypto` : primitives de base (`013-security.md` §3), dérivation de clés, tests unitaires.
-- Crate `storage` : blocs de taille fixe, UUID opaque, WAL, cycle écriture/lecture (`006-storage.md`).
+- Crate `storage` : blocs de taille fixe, UUID opaque, WAL, cycle écriture/lecture, séparation Block Store / Local Index Store (`006-storage.md`).
 - Crate `vault` (sous-ensemble minimal) : création/ouverture/fermeture de coffre, import/export simple.
 - CLI minimale pour valider le format sur disque sans dépendre d'aucune interface graphique.
 - Aucun réseau à ce stade.
 
-## Phase 2 — Manifest
+## Phase 3 — Manifest
 
-- Crate `manifest` : index, partitions, vecteurs de version, Merkle (`008-manifest.md`).
+- Crate `manifest` : index partitionné, vecteurs de version, Merkle (`008-manifest.md`).
 - Toujours en local — validation du cycle complet import → manifest → lecture sans réseau.
-
-## Phase 3 — Squelette cross-compilé
-
-- Structure de workspace complète (`004-workspace.md` §6), toutes les crates présentes même en stub.
-- Validation de compilation sur les trois cibles (Linux natif, Windows via `cross`/mingw-w64, Android via `cargo-ndk`) avant d'ajouter la complexité réseau.
-- Poser dès cette phase la crate `identity` séparée (`011-identity.md`), même non finalisée, pour éviter un couplage accidentel ultérieur.
 
 ## Phase 4 — Identity
 
@@ -59,6 +59,8 @@ Ce document définit l'ordre de développement recommandé, cohérent avec les p
 
 ## Phase 9 — Interfaces
 
+- Explorateur virtuel interne d'abord (accès aux fichiers via l'API du Vault, sans montage système) — c'est de toute façon la seule option sur Android (pas de FUSE sans root).
+- Montage système réel (FUSE via `fuser` sur Linux, WinFsp sur Windows) ajouté **seulement une fois le moteur validé** par l'explorateur interne — pas en parallèle. FUSE/WinFsp sont des dépendances externes non triviales ; les introduire avant que Vault/Manifest/Sync soient stables complique inutilement le débogage.
 - Desktop (Tauri ou egui), Android (Kotlin + JNI), CLI.
 - Le Core doit être fonctionnellement complet avant cette phase — les interfaces ne sont que des clientes.
 

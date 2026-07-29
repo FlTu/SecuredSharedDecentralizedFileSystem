@@ -1,0 +1,8 @@
+[package]
+name = "common"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Types partages, erreurs, evenements, identifiants, traits publics (cf. docs/004-workspace.md paragraphe 7)"
+
+[dependencies]

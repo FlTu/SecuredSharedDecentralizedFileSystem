@@ -1,0 +1,9 @@
+[package]
+name = "manifest"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Manifest Engine : index partitionne, Merkle, Version Vectors (cf. docs/008-manifest.md)"
+
+[dependencies]
+common = { path = "../common" }

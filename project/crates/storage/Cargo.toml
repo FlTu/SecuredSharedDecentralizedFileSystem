@@ -1,0 +1,9 @@
+[package]
+name = "storage"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Storage Engine : blocs immuables UUID opaque, WAL, GC (cf. docs/006-storage.md)"
+
+[dependencies]
+common = { path = "../common" }

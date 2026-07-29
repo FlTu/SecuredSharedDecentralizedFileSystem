@@ -1,0 +1,11 @@
+[package]
+name = "ffi"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "FFI : integration Kotlin/Swift/C/C++ (cf. docs/004-workspace.md paragraphe 17)"
+
+[dependencies]
+
+[lib]
+crate-type = ["cdylib", "staticlib", "rlib"]

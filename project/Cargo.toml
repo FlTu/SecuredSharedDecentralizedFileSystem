@@ -1,0 +1,23 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/common",
+    "crates/crypto",
+    "crates/storage",
+    "crates/manifest",
+    "crates/vault",
+    "crates/sync",
+    "crates/network",
+    "crates/identity",
+    "crates/daemon",
+    "crates/ipc",
+    "crates/ffi",
+    "crates/cli",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+
+# cf. docs/004-workspace.md — dependances partagees a completer au fil des phases

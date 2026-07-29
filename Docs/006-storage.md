@@ -273,6 +273,17 @@ Les blocs volumineux ne restent pas durablement en mémoire.
 
 ---
 
+# 11bis. Séparation Block Store / Local Index Store
+
+Le stockage physique des blocs (`blocks/`) et le bookkeeping local (cache, statistiques, listes de candidats GC) sont **deux espaces distincts**, jamais mélangés :
+
+- **Block Store** : uniquement les blocs chiffrés immuables (§4, §6). Aucune métadonnée locale n'y est mêlée.
+- **Local Index Store** : cache, statistiques d'accès, état d'avancement du GC — entièrement **reconstructible** à partir du Block Store et du Manifest en cas de corruption ou de perte.
+
+Cette séparation garantit qu'une corruption du bookkeeping local ne peut jamais entraîner de perte de données utilisateur : au pire, l'Index Store est reconstruit par un balayage du Block Store et du Manifest au prochain démarrage. Elle prépare également l'arrivée de backends de stockage alternatifs (objet, S3, distribué) sans modifier la logique du moteur.
+
+---
+
 # 12. Politique de cache
 
 Le cache est limité.

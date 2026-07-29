@@ -1,0 +1,8 @@
+[package]
+name = "sync"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Sync Engine : comparaison de manifests, planification, Merge Engine (cf. docs/009-sync.md)"
+
+[dependencies]

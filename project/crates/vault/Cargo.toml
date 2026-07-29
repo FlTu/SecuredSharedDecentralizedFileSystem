@@ -1,0 +1,9 @@
+[package]
+name = "vault"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Vault Engine : logique metier du coffre (cf. docs/007-vault.md)"
+
+[dependencies]
+common = { path = "../common" }

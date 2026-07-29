@@ -1,0 +1,8 @@
+[package]
+name = "ipc"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "IPC : protocole custom CBOR, jetons de capacite (cf. docs/012-ipc.md)"
+
+[dependencies]
