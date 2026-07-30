@@ -6,3 +6,13 @@ license.workspace = true
 description = "Primitives cryptographiques approuvees : Argon2id, HKDF, XChaCha20-Poly1305, Ed25519, X25519 (cf. docs/013-security.md)"
 
 [dependencies]
+argon2 = "0.5"
+hkdf = "0.12"
+sha2 = "0.10"
+chacha20poly1305 = "0.10"
+ed25519-dalek = { version = "2", features = ["rand_core"] }
+x25519-dalek = { version = "2", features = ["static_secrets"] }
+rand_core = { version = "0.6", features = ["getrandom"] }
+zeroize = "=1.6.0"
+zeroize_derive = "=1.4.2"
+base64ct = "=1.6.0"

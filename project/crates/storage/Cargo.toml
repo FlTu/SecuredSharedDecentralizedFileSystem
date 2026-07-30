@@ -7,3 +7,4 @@ description = "Storage Engine : blocs immuables UUID opaque, WAL, GC (cf. docs/0
 
 [dependencies]
 common = { path = "../common" }
+uuid = { version = "=1.8.0", features = ["v4"] }

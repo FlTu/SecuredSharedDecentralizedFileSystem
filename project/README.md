@@ -50,8 +50,42 @@ la validation cross-compilée doit se faire chez toi.
    cargo fmt --all -- --check
    ```
 
-## Prochaine étape (Phase 2 de `015-roadmap.md`)
+## Interface graphique (crate `desktop`)
 
-Une fois les trois cibles validées chez toi, on attaque les crates
-`crypto`, `storage` et `vault` avec une vraie logique métier (docs/006,
-007, 013).
+Le code source d'un explorateur minimal (`crates/desktop/src/main.rs`, basé
+sur `eframe`/`egui`) est fourni, mais **n'a pas pu être compilé ni exécuté
+dans ce sandbox** : l'arbre de dépendances d'`eframe` (winit, wgpu,
+wayland...) dépasse ce que le Rust 1.75 de ce sandbox peut construire, et
+le sandbox n'a de toute façon pas de serveur d'affichage pour montrer une
+fenêtre. La crate a donc été retirée des membres du workspace (`Cargo.toml`
+racine) pour ne pas casser `cargo build --workspace`.
+
+Pour l'essayer chez toi (rustup, Rust récent, environnement graphique) :
+
+1. Rajoute `"crates/desktop"` dans `members` du `Cargo.toml` racine.
+2. `cargo run -p desktop`
+3. Dans la fenêtre : indique le chemin d'un coffre déjà créé (`syfi create`),
+   sa passphrase, clique "Ouvrir", puis sélectionne un fichier et exporte-le.
+
+Comme ce code n'a jamais été compilé, il est possible qu'il reste une ou
+deux erreurs de compilation liées à l'API exacte d'`eframe` 0.27 (les
+signatures évoluent parfois d'une version mineure à l'autre) — corrige-les
+au besoin, ou dis-moi les messages d'erreur et je les corrige avec toi.
+
+## Ce qui est déjà fonctionnel et testé
+
+- `crypto` : 10/10 tests (Argon2id, HKDF, XChaCha20-Poly1305, Ed25519, X25519).
+- `storage` : 5/5 tests (Block Store réel sur disque).
+- `manifest` : 4/4 tests (index CBOR chiffré, tombstones).
+- `vault` : 6/6 tests (create/open/import/export/delete, persistance,
+  multi-blocs, rejet de mauvaise passphrase).
+- `cli` (`target/debug/syfi`) : testé manuellement en conditions réelles —
+  create/import/ls/export bout en bout, avec vérification que le contenu
+  physique sur disque ne contient jamais le texte en clair.
+
+## Prochaine étape (Phase 2 restante / Phase 3)
+
+- Ajouter des tests d'intégration multi-fichiers/dossiers imbriqués sur `vault`.
+- Une fois la crate `desktop` validée chez toi, on peut enchaîner sur
+  `identity` (Phase 4) ou approfondir `manifest` (partitionnement réel,
+  Merkle — actuellement une seule table plate).

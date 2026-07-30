@@ -7,3 +7,6 @@ description = "Manifest Engine : index partitionne, Merkle, Version Vectors (cf.
 
 [dependencies]
 common = { path = "../common" }
+serde = { version = "1", features = ["derive"] }
+ciborium = "0.2"
+crypto = { path = "../crypto" }

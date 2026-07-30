@@ -1,15 +1,16 @@
 [package]
-name = "cli"
+name = "desktop"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
-description = "CLI pour valider le squelette localement (docs/015-roadmap.md Phase 2)"
+description = "Interface desktop minimale (docs/015-roadmap.md Phase 9 — explorateur virtuel avant tout montage FUSE)"
 
 [[bin]]
-name = "syfi"
+name = "syfi-desktop"
 path = "src/main.rs"
 
 [dependencies]
 common = { path = "../common" }
 vault = { path = "../vault" }
 manifest = { path = "../manifest" }
+eframe = "0.27"
