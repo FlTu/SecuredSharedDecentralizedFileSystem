@@ -22,7 +22,7 @@ fn main() -> eframe::Result<()> {
     eframe::run_native(
         "SyFi — explorateur (squelette)",
         options,
-        Box::new(|_cc| Ok(Box::new(SyfiApp::default()))),
+        Box::new(|_cc| Box::new(SyfiApp::default())),
     )
 }
 

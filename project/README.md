@@ -50,15 +50,77 @@ la validation cross-compilée doit se faire chez toi.
    cargo fmt --all -- --check
    ```
 
-## Interface graphique (crate `desktop`)
+## Android (APK)
+
+**Non compilable dans ce sandbox** : pas de SDK Android, pas de Gradle, pas
+de NDK disponibles ici (réseau restreint aux domaines listés dans la
+configuration du sandbox, qui n'incluent pas les serveurs de Google/Android).
+Tout ce qui suit a été écrit avec soin mais **jamais construit ni exécuté** —
+à valider chez toi comme pour la crate `desktop`.
+
+### Ce qui est fourni
+
+- `crates/ffi/src/lib.rs` : pont JNI réel vers `vault` (compile dans ce
+  sandbox — `cargo build -p ffi` passe). Quatre fonctions : créer, ouvrir,
+  lister la racine, fermer un coffre. Signatures Kotlin correspondantes en
+  commentaire au-dessus de chaque fonction Rust.
+- `android/` : projet Gradle/Kotlin minimal — une seule Activity, deux
+  champs (chemin, passphrase), deux boutons (créer, ouvrir), une liste
+  affichant le contenu de la racine du coffre. Pas de montage système réel
+  (impossible sans root sur Android, cf. `015-roadmap.md` §5) — c'est
+  l'explorateur virtuel interne, comme prévu.
+
+### Étapes pour obtenir un APK, chez toi
+
+1. **Installer le NDK** (via Android Studio → SDK Manager → SDK Tools →
+   NDK, ou en standalone) et `cargo-ndk` :
+   ```
+   cargo install cargo-ndk
+   rustup target add aarch64-linux-android armv7-linux-androideabi
+   ```
+
+2. **Compiler le crate `ffi` pour Android** — depuis la racine du workspace
+   Rust (`project/`, pas `project/android/`) :
+   ```
+   cargo ndk -t arm64-v8a -t armeabi-v7a -o android/app/src/main/jniLibs build -p ffi --release
+   ```
+   Ça doit produire `android/app/src/main/jniLibs/arm64-v8a/libffi.so` et
+   l'équivalent `armeabi-v7a/`.
+
+3. **Ouvrir `android/` dans Android Studio** (ou `cd android && ./gradlew
+   assembleDebug` en ligne de commande une fois le wrapper Gradle généré —
+   `gradle wrapper` si tu as Gradle installé globalement, sinon Android
+   Studio le fait automatiquement à l'ouverture du projet).
+
+4. **Lancer sur un appareil/émulateur** — le champ "chemin du coffre"
+   attend un chemin accessible à l'app (`/data/data/com.syfi.app/files/...`
+   ou un chemin sur le stockage partagé avec la permission adéquate, à
+   ajouter dans `AndroidManifest.xml` si tu testes sur stockage partagé).
+
+### Limites connues de ce squelette Android
+
+- Pas de gestion de permissions runtime (stockage) — à ajouter avant tout
+  test sur un chemin hors du répertoire privé de l'app.
+- `nativeListRoot` sérialise en texte tabulé plutôt qu'en JSON pour éviter
+  une dépendance supplémentaire à ce stade — à revoir si le format doit
+  transporter plus que type/nom/taille/id.
+- Aucune gestion d'erreur fine côté Kotlin au-delà d'un message générique —
+  suffisant pour valider que la chaîne complète fonctionne, pas pour un
+  usage réel.
+
+## Interface graphique desktop (crate `desktop`)
+
+## Interface graphique desktop (crate `desktop`)
 
 Le code source d'un explorateur minimal (`crates/desktop/src/main.rs`, basé
-sur `eframe`/`egui`) est fourni, mais **n'a pas pu être compilé ni exécuté
-dans ce sandbox** : l'arbre de dépendances d'`eframe` (winit, wgpu,
-wayland...) dépasse ce que le Rust 1.75 de ce sandbox peut construire, et
-le sandbox n'a de toute façon pas de serveur d'affichage pour montrer une
-fenêtre. La crate a donc été retirée des membres du workspace (`Cargo.toml`
-racine) pour ne pas casser `cargo build --workspace`.
+sur `eframe`/`egui`) est fourni. **Bug corrige le 31/07** : la signature du
+closure passe a `eframe::run_native` a ete adaptee a l'API d'`eframe` 0.27
+(`Box<dyn App>` attendu directement, pas `Result<Box<dyn App>, _>` — cette
+derniere forme n'existe qu'a partir d'une version ulterieure d'eframe).
+Toujours **non compile dans ce sandbox** pour les memes raisons que
+precedemment (toolchain, pas de serveur d'affichage) — a valider chez toi
+en premier avec `cargo run -p desktop` apres avoir remis `"crates/desktop"`
+dans les membres du workspace racine.
 
 Pour l'essayer chez toi (rustup, Rust récent, environnement graphique) :
 
