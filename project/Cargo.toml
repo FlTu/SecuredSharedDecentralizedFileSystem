@@ -13,7 +13,6 @@ members = [
     "crates/ipc",
     "crates/ffi",
     "crates/cli",
-    "crates/desktop",
 ]
 
 [workspace.package]

@@ -1,4 +1,94 @@
-# SyFi — squelette de workspace (Phase 1)
+# SyFi — squelette de workspace (Phase 1-2)
+
+## Correction du 31/07 (v2) : `BaseExtension` cast exception
+
+Le garde-fou de la première correction (`android.builtInKotlin=false`, pour
+garder le plugin Kotlin classique) ne suffisait pas : à partir d'AGP 9.0,
+le plugin séparé `org.jetbrains.kotlin.android` est **complètement
+incompatible** avec le nouveau DSL d'AGP (il tente un cast interne vers
+`BaseExtension`, un type qui n'existe plus), et pas seulement déconseillé.
+Confirmé par la doc officielle : *"Android Gradle plugin 9.0 introduces
+built-in Kotlin support and enables it by default [...] you no longer have
+to apply the org.jetbrains.kotlin.android plugin."*
+
+Migration effectuée :
+
+- Plugin `org.jetbrains.kotlin.android` retiré de `build.gradle.kts`
+  (racine) et de `app/build.gradle.kts`.
+- `android.builtInKotlin=false` retiré de `gradle.properties` (on laisse
+  la valeur par défaut, `true`).
+- La config du compilateur Kotlin passe maintenant par un bloc `kotlin {}`
+  de haut niveau dans `app/build.gradle.kts` (`compilerOptions { jvmTarget
+  = ... }`) plutôt que par l'ancien `android { kotlinOptions {} }`.
+
+## Correction du 31/07 (v1) : échec `gradlew` avec JDK 25
+
+Si tu as testé `./gradlew assembleDebug` et obtenu une erreur cryptique
+type `What went wrong: 25.0.3` (ou juste `25`), ce n'est pas un problème
+de squelette : **Gradle 8.7 ne supporte pas les JDK au-delà de la version
+22**, or beaucoup de distributions récentes (Debian 13 notamment)
+installent maintenant un JDK 25 par défaut. C'est corrigé ici :
+
+- Wrapper Gradle passé en **9.5.1** (stable en juillet 2026, supporte JDK
+  17 à 26) — régénéré légitimement, pas juste édité à la main.
+- AGP passé en **9.3.0** (Gradle 9.x n'est officiellement testé qu'avec
+  AGP 9.x). AGP 9.0 a introduit un changement majeur — le "Built-in
+  Kotlin", qui remplace le plugin Kotlin séparé — mais je n'ai aucun moyen
+  de vérifier sa syntaxe exacte sans environnement Android réel, donc j'ai
+  **désactivé cette bascule** (`android.builtInKotlin=false` dans
+  `gradle.properties`) pour rester sur le plugin `org.jetbrains.kotlin.android`
+  classique, dont je suis sûr de la syntaxe. Cette option disparaîtra à
+  AGP 10.0 — à migrer plus tard, une fois que tu peux tester en conditions
+  réelles.
+
+Si `./gradlew assembleDebug` échoue encore différemment après cette mise à
+jour, renvoie-moi l'erreur — c'est du terrain sur lequel je ne peux valider
+que par recherche documentaire, pas par exécution réelle.
+
+## Organisation du dépôt (superprojet)
+
+Un seul dépôt, conforme à `docs/004-workspace.md` §2 : le workspace Rust
+(`crates/`) et le projet Android (`android/`) vivent côte à côte, pas dans
+deux projets séparés — c'est déjà le cas ici, rien à assembler en plus.
+
+```
+project/
+├── crates/            workspace Rust (Core)
+├── android/            projet Gradle/Kotlin (client Android)
+├── .github/workflows/  CI qui build les deux (voir plus bas)
+├── Makefile             orchestration locale (une fois l'environnement complet dispo)
+└── README.md
+```
+
+## Pourquoi une CI GitHub Actions (`.github/workflows/build.yml`)
+
+Ce sandbox de développement n'a et ne peut pas avoir : rustup (donc pas de
+cibles Android), le NDK (le paquet apt qui prétend l'installer télécharge
+en réalité depuis `dl.google.com`, bloqué — `403 Forbidden` vérifié), un
+Gradle assez récent pour AGP 8.x nativement (celui d'apt est un 4.4.1 de
+2017 — j'ai pu m'en servir uniquement pour générer le *wrapper* Gradle 8.7,
+qui lui-même ne nécessite le téléchargement du binaire complet qu'à la
+première vraie invocation), ni l'accès au Maven de Google pour les
+dépendances AndroidX. Aucune restructuration de projet ne change ça — c'est
+une limite réseau du sandbox, pas d'organisation.
+
+**La CI résout ça concrètement** : elle tourne sur des runners GitHub avec
+accès réseau complet, installe elle-même rustup + cibles Android + NDK +
+SDK + JDK, compile la lib native via `cargo ndk`, puis l'APK via
+`./gradlew assembleDebug`, et publie l'APK en artefact téléchargeable
+depuis l'onglet "Actions" du dépôt une fois poussé sur GitHub. Aucune
+installation locale nécessaire de ton côté non plus, si tu préfères cette
+voie à Android Studio.
+
+## Ce qui est déjà validé dans ce sandbox
+
+- `cargo build --workspace` / `cargo test --workspace` : succès, 25/25 tests.
+- `crates/ffi` (pont JNI) : compile (`cargo build -p ffi`), mais évidemment
+  pas testable côté JVM/Android ici.
+- Le wrapper Gradle 8.7 dans `android/` (`gradlew`, `gradlew.bat`,
+  `gradle/wrapper/`) est réel et généré légitimement — pas un fichier
+  inventé — mais je n'ai pas pu aller plus loin (pas de SDK/NDK).
+
 
 Ce squelette a été validé dans un environnement sandbox (Rust 1.75 via apt,
 sans rustup) :

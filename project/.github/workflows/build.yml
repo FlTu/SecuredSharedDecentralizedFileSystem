@@ -1,0 +1,86 @@
+name: SyFi — build Rust + APK Android
+
+# Ce workflow fait tout ce que le sandbox de developpement ne pouvait pas
+# faire localement (docs/015-roadmap.md) : les runners GitHub ont un acces
+# reseau complet (Google Maven, dl.google.com, services.gradle.org...),
+# contrairement au sandbox utilise pour ecrire ce squelette.
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  rust:
+    name: Workspace Rust (build + tests)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Installer Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Compiler le workspace
+        run: cargo build --workspace --verbose
+
+      - name: Lancer les tests
+        run: cargo test --workspace --verbose
+
+      - name: Clippy (NFR-029)
+        run: |
+          rustup component add clippy
+          cargo clippy --workspace --all-targets -- -D warnings
+
+      - name: rustfmt --check (NFR-029)
+        run: |
+          rustup component add rustfmt
+          cargo fmt --all -- --check
+
+  android:
+    name: APK Android (cargo-ndk + Gradle)
+    runs-on: ubuntu-latest
+    needs: rust
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Installer Rust stable + cibles Android
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android,armv7-linux-androideabi
+
+      - name: Installer cargo-ndk
+        run: cargo install cargo-ndk
+
+      - name: Installer le JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Installer le SDK Android
+        uses: android-actions/setup-android@v3
+
+      - name: Installer le NDK
+        run: sdkmanager --install "ndk;26.1.10909125"
+
+      - name: Compiler la bibliotheque native (arm64-v8a, armeabi-v7a)
+        env:
+          ANDROID_NDK_HOME: ${{ env.ANDROID_SDK_ROOT }}/ndk/26.1.10909125
+        run: |
+          cargo ndk -t arm64-v8a -t armeabi-v7a \
+            -o android/app/src/main/jniLibs \
+            build -p ffi --release
+
+      - name: Build de l'APK debug
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+
+      - name: Publier l'APK comme artefact telechargeable
+        uses: actions/upload-artifact@v4
+        with:
+          name: syfi-debug-apk
+          path: android/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error

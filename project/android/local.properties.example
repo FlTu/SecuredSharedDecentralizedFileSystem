@@ -1,0 +1,7 @@
+# Copie ce fichier en local.properties (deja dans .gitignore, specifique a
+# chaque machine) et ajuste le chemin vers ton SDK Android reel.
+#
+# local.properties est prioritaire sur ANDROID_HOME et ANDROID_SDK_ROOT —
+# c'est le mecanisme prevu par Gradle/AGP pour eviter exactement l'ambiguite
+# que tu as rencontree entre deux variables d'environnement contradictoires.
+sdk.dir=/usr/lib/android-sdk
